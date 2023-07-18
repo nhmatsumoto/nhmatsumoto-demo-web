@@ -21,13 +21,13 @@ export const AuthProvider = ({ children } : { children: JSX.Element | JSX.Elemen
                 
                     console.log(data);
                 }catch(error) {
-                    console.log(error);
+                    console.log("AuthProvider validateToken", error);
                 }
             }
         }
 
         validateToken();
-    }, [api])
+    }, [api]);
 
 
     const signin = async (email: string, senha: string) => {

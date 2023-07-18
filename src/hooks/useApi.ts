@@ -1,7 +1,11 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: ' http://localhost:5247/api/'
+    baseURL: 'https://localhost:7199/api/',
+    timeout: 1000,
+    headers: {
+        'Content-Type': 'application/json',
+    }
 })
 
 export const useApi = () => ({
@@ -9,17 +13,11 @@ export const useApi = () => ({
     validateToken: async (token: string) => {
         try {
 
-            const headers = {
-                'Content-Type': 'application/json',
-            };
+            const response = await api.post('auth/validate',{ token });
+            return response;
 
-            const response = await api.post('auth/validate',{ token }, { headers });
-
-            if(response) {
-                return response.data;
-            }
         }catch(error){
-            console.log(error);
+            console.log("useApi ValidateToken", error);
         }
     },
     refresh: async (token: string) => {
@@ -27,14 +25,8 @@ export const useApi = () => ({
     },
     signin: async (email: string, senha: string) => {
 
-        const headers = {
-            'Content-Type': 'application/json', 
-        };
-
         try {
-
-            const response = await api.post('auth/signin', { email, senha }, { headers });
-
+            const response = await api.post('auth/signin', { email, senha });
             if(response) {
                 return response.data;
             }
@@ -45,12 +37,7 @@ export const useApi = () => ({
        
     },
     signout: async (email: string, refreshToken: string) => {
-
-        const headers = {
-            'Content-Type': 'application/json', 
-        };
-
-        const response = await api.post('auth/signout', { Email: email, RefreshToken: refreshToken }, { headers });
+        const response = await api.post('auth/signout', { Email: email, RefreshToken: refreshToken });
 
         if(response) {
             return response.data;
