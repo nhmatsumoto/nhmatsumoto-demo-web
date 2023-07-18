@@ -8,7 +8,7 @@ export const AuthProvider = ({ children } : { children: JSX.Element | JSX.Elemen
     const [user, setUser] = useState<User | null>(null);
     const api = useApi();
 
-    useEffect(() => {
+    useEffect( () => {
 
         const validateToken = async () => {
 
@@ -16,10 +16,12 @@ export const AuthProvider = ({ children } : { children: JSX.Element | JSX.Elemen
 
             if(token)
             {
-                const data = await api.validateToken(token);
+                try {
+                    const data = await api.validateToken(token);
                 
-                if(data.user) {
-                    setUser(data.user);
+                    console.log(data);
+                }catch(error) {
+                    console.log(error);
                 }
             }
         }

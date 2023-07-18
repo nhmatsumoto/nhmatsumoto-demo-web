@@ -7,19 +7,20 @@ const api = axios.create({
 export const useApi = () => ({
 
     validateToken: async (token: string) => {
+        try {
 
-        const headers = {
-            'Content-Type': 'application/json',
-        };
+            const headers = {
+                'Content-Type': 'application/json',
+            };
 
-        const response = await api.post('auth/validate',{ token }, { headers });
+            const response = await api.post('auth/validate',{ token }, { headers });
 
-        alert(response)
-
-        if(response) {
-            return response.data;
+            if(response) {
+                return response.data;
+            }
+        }catch(error){
+            console.log(error);
         }
-       
     },
     refresh: async (token: string) => {
 
