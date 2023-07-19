@@ -1,30 +1,34 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { User } from "../../types/user";
 import { useApi } from "../../hooks/useApi";
 import { AuthContext } from "./AuthContext";
-import { LoginRequestDTO } from "./AuthClient";
+import { LoginRequestDTO, LogoutRequestDTO } from "./AuthClient";
 import { UsuarioDTO } from "../../types/authClient";
+
 
 export const AuthProvider = ({ children } : { children: JSX.Element | JSX.Element[]}) => {
 
     const [user, setUser] = useState<UsuarioDTO | null>(null);
-    const api = useApi();
+
+    const api = useContext(AuthContext);
 
     useEffect( () => {
 
         const validateToken = async () => {
 
-            const token = localStorage.getItem('nhm-demo-web-app-token');
+            const storageData = localStorage.getItem('nhm-demo-web-app-token');
 
-            if(token)
+            if(storageData)
             {
                 try {
-                    
-                    const data = await validate(token);
+                    //retornar usuário?
+                    //passa token retorna usuário?
+                    const data = await validate(storageData);
+
+                    return data;
                 
-                    console.log('AuthProvider validate token ', data);
                 }catch(error) {
-                    console.log("AuthProvider validateToken", error);
+                    throw new Error('Erro ao validar token');
                 }
             }
         }
@@ -35,38 +39,37 @@ export const AuthProvider = ({ children } : { children: JSX.Element | JSX.Elemen
 
     const signin = async (email: string, senha: string) => {
 
+        
         const data = await api.signin(email, senha);
 
-        if(data?.user && data.accessToken)
-        {
-            setUser(data.user);
-            setToken(data.accessToken);
-            return true;
-        }
-
-        return false;
+            if(data?.user && data.accessToken)
+            {
+                setUser(data.user);
+                setToken(data.accessToken);
+                return data;
+            }
     }
 
-    const signout = () => {
+    const signout = (request: LogoutRequestDTO) => {
         
     }
 
     const validate = async(token: string) => {
 
-        const data = await api.validateToken(token);
+        const data = await api.validate(token);
 
         if(data)
-            return true;
+            return data;
 
-        return false;
+        return data;
     }
 
-    const setToken = (token : string) => {
+    const setToken = (token: string) => {
         localStorage.setItem('nhm-demo-web-app-token', token);
     }
 
     return (
-        <AuthContext.Provider value={{ user, signin, signout }}>
+        <AuthContext.Provider value={{ user, signin, signout, validate }}>
             {children}
         </AuthContext.Provider>
     );   

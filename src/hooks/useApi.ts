@@ -1,50 +1,66 @@
-import axios from 'axios';
-import { AuthClient } from '../contexts/auth/AuthClient';
+import { AuthClient, LoginRequestDTO, RefreshRequestDTO } from '../contexts/auth/AuthClient';
+import { LogoutDTO } from '../types/authClient';
 
 const client = new AuthClient();
 
-const api = axios.create({
-    baseURL: 'https://localhost:7199/api/',
-    timeout: 1000,
-    headers: {
-        'Content-Type': 'application/json',
-    }
-})
-
 export const useApi = () => ({
+    
+    validate: async (token: string) => {
 
-    validateToken: async (token: string) => {
         try {
-            
-            
             const response = await client.validate(token);
-            
             return response;
 
-        }catch(error){
-            console.log("useApi ValidateToken", error);
+        }catch(error)
+        {
+            throw new Error('Erro ao validar token');
         }
-    },
-    refresh: async (token: string) => {
 
     },
-    signin: async (email: string, senha: string) => {
+    
+    refresh: async (request: RefreshRequestDTO) => {
 
         try {
-            const response = await client.signin({email, senha});
+            const response = await client.refresh(request);
+
+            if(response)
+            {
+                return response;
+            }
+
+        }catch(error) 
+        {
+            throw new Error('Erro ao atualizar token');
+        }
+    },
+
+    signin: async (request: LoginRequestDTO) => {
+
+        try {
+            const response = await client.signin(request);
 
             if(response) {
                 return response;
             }
-        }catch
+        }catch(error)
         {
-            throw new Error('Erro ao tentar efetuar login');
+            throw new Error('Erro processar solicitação de login');
         }
        
     },
-    signout: async (email: string, refreshToken: string) => {
-        
-        
 
+    signout: async (request: LogoutDTO) => {
+
+        try {
+            const response = await client.signout(request);
+
+            if(response)
+            {
+                return response;
+            }
+        }catch(error) 
+        {
+            throw new Error('Erro ao tentar efetuar logout');
+        }
     }
 });

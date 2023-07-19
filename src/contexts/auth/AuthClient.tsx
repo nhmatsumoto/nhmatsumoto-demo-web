@@ -61,21 +61,17 @@ export class AuthClient {
         return Promise.resolve<LoginResponseDTO>(null as any);
     }
 
-    refresh(token: string | undefined, refreshToken: string | undefined): Promise<string> {
-        let url_ = this.baseUrl + "/api/Auth/refresh?";
-        if (token === null)
-            throw new Error("The parameter 'token' cannot be null.");
-        else if (token !== undefined)
-            url_ += "token=" + encodeURIComponent("" + token) + "&";
-        if (refreshToken === null)
-            throw new Error("The parameter 'refreshToken' cannot be null.");
-        else if (refreshToken !== undefined)
-            url_ += "refreshToken=" + encodeURIComponent("" + refreshToken) + "&";
+    refresh(request: RefreshRequestDTO): Promise<string> {
+        let url_ = this.baseUrl + "/api/Auth/refresh";
         url_ = url_.replace(/[?&]$/, "");
 
+        const content_ = JSON.stringify(request);
+
         let options_: RequestInit = {
+            body: content_,
             method: "POST",
             headers: {
+                "Content-Type": "application/json",
                 "Accept": "application/json"
             }
         };
@@ -108,7 +104,7 @@ export class AuthClient {
         return Promise.resolve<string>(null as any);
     }
 
-    validate(token: string): Promise<number | null> {
+    validate(token: string): Promise<ClaimsPrincipal> {
         let url_ = this.baseUrl + "/api/Auth/validate";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -128,30 +124,28 @@ export class AuthClient {
         });
     }
 
-    protected processValidate(response: Response): Promise<number | null> {
+    protected processValidate(response: Response): Promise<ClaimsPrincipal> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
             let result200: any = null;
-            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as number;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ClaimsPrincipal;
             return result200;
             });
         } else if (status === 400) {
             return response.text().then((_responseText) => {
-            let result400: any = null;
-            result400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as number;
-            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            return throwException("A server side error occurred.", status, _responseText, _headers);
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<number | null>(null as any);
+        return Promise.resolve<ClaimsPrincipal>(null as any);
     }
 
-    signout(dto: LogoutDTO): Promise<FileResponse | null> {
+    signout(dto: LogoutRequestDTO): Promise<FileResponse | null> {
         let url_ = this.baseUrl + "/api/Auth/singout";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -346,7 +340,46 @@ export interface LoginRequestDTO {
     senha: string;
 }
 
-export interface LogoutDTO {
+export interface RefreshRequestDTO {
+    token: string;
+    refreshToken: string;
+}
+
+export interface ClaimsPrincipal {
+    claims: Claim[];
+    identities: ClaimsIdentity[];
+    identity?: IIdentity | undefined;
+}
+
+export interface Claim {
+    issuer: string;
+    originalIssuer: string;
+    properties: { [key: string]: string; };
+    subject?: ClaimsIdentity | undefined;
+    type: string;
+    value: string;
+    valueType: string;
+}
+
+export interface ClaimsIdentity {
+    authenticationType?: string | undefined;
+    isAuthenticated: boolean;
+    actor?: ClaimsIdentity | undefined;
+    bootstrapContext?: any | undefined;
+    claims: Claim[];
+    label?: string | undefined;
+    name?: string | undefined;
+    nameClaimType: string;
+    roleClaimType: string;
+}
+
+export interface IIdentity {
+    name?: string | undefined;
+    authenticationType?: string | undefined;
+    isAuthenticated: boolean;
+}
+
+export interface LogoutRequestDTO {
     email: string;
     refreshToken: string;
 }

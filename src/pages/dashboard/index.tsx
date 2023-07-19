@@ -9,9 +9,8 @@ const Dashboard = () => {
 
     return (
         <Container>
-           
+            <h1>Olá {auth.user?.name}, seja bem-vindo!</h1>
         </Container>
-       
     );
 }
 
