@@ -1,4 +1,7 @@
 import axios from 'axios';
+import { AuthClient } from '../contexts/auth/AuthClient';
+
+const client = new AuthClient();
 
 const api = axios.create({
     baseURL: 'https://localhost:7199/api/',
@@ -12,8 +15,10 @@ export const useApi = () => ({
 
     validateToken: async (token: string) => {
         try {
-
-            const response = await api.post('auth/validate',{ token });
+            
+            
+            const response = await client.validate(token);
+            
             return response;
 
         }catch(error){
@@ -26,9 +31,10 @@ export const useApi = () => ({
     signin: async (email: string, senha: string) => {
 
         try {
-            const response = await api.post('auth/signin', { email, senha });
+            const response = await client.signin({email, senha});
+
             if(response) {
-                return response.data;
+                return response;
             }
         }catch
         {
@@ -37,13 +43,8 @@ export const useApi = () => ({
        
     },
     signout: async (email: string, refreshToken: string) => {
-        const response = await api.post('auth/signout', { Email: email, RefreshToken: refreshToken });
-
-        if(response) {
-            return response.data;
-        }
         
-        return response;
+        
 
     }
 });
